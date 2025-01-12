@@ -713,7 +713,7 @@ Value Search::Worker::search(
 
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
-    const auto correctionValue      = ttData.move != Move::none() ? 0 : correction_value(*thisThread, pos, ss);
+    const auto correctionValue      = ttCapture ? 0 : correction_value(*thisThread, pos, ss);
     if (ss->inCheck)
     {
         // Skip early pruning when in check
@@ -1491,7 +1491,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     Key   posKey;
     Move  move, bestMove;
     Value bestValue, value, futilityBase;
-    bool  pvHit, givesCheck, capture;
+    bool  pvHit, givesCheck, capture, ttCapture;
     int   moveCount;
     Color us = pos.side_to_move();
 
@@ -1524,6 +1524,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     ss->ttHit    = ttHit;
     ttData.move  = ttHit ? ttData.move : Move::none();
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
+    ttCapture    = ttData.move && pos.capture_stage(ttData.move);
     pvHit        = ttHit && ttData.is_pv;
 
     // At non-PV nodes we check for an early TT cutoff
@@ -1534,7 +1535,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     // Step 4. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
-    const auto correctionValue      = ttData.move != Move::none() ? 0 : correction_value(*thisThread, pos, ss);
+    const auto correctionValue      = ttCapture ? 0 : correction_value(*thisThread, pos, ss);
     if (ss->inCheck)
         bestValue = futilityBase = -VALUE_INFINITE;
     else
