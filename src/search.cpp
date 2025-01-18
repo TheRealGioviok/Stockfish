@@ -1162,9 +1162,9 @@ moves_loop:  // When in check, search starts here
         if (cutNode)
             r += 2355 - (ttData.depth >= depth && ss->ttPv) * 1141;
 
-        // Increase reduction if ttMove is a capture but the current move is not a capture (~3 Elo)
+        // Increase reduction if ttMove is a capture but the current move is not a capture (~3 Elo) and further if the ttMove passed singular check
         if (ttCapture && !capture)
-            r += 1087 + (depth < 8) * 990;
+            r += 1087 + (depth < 8) * 990 + singularSuccess * 1280;
 
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
@@ -1173,9 +1173,6 @@ moves_loop:  // When in check, search starts here
         // For first picked move (ttMove) reduce reduction (~3 Elo)
         else if (move == ttData.move)
             r -= 1960;
-
-        // Increase reduction for quiets if tt move was singular and noisy (we may try to use the singular difference as well to adjust r)
-        if (move != ttData.move && !capture && singularSuccess && ttCapture) r += 1280;
 
         if (capture)
             ss->statScore =
