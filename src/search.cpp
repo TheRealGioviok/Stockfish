@@ -928,6 +928,7 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
+    int singularExt = 0;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1080,6 +1081,8 @@ moves_loop:  // When in check, search starts here
                     extension = 1 + (value < singularBeta - doubleMargin)
                               + (value < singularBeta - tripleMargin)
                               + (value < singularBeta - quadMargin);
+                    
+                    singularExt = extension;
 
                     depth += ((!PvNode) && (depth < 15));
                 }
@@ -1159,10 +1162,10 @@ moves_loop:  // When in check, search starts here
         if (cutNode)
             r += 2355 - (ttData.depth >= depth && ss->ttPv) * 1141;
 
-        // Increase reduction if ttMove is a capture but the current move is not a capture (~3 Elo)
+        // Increase reduction if ttMove is a capture but the current move is not a capture (~3 Elo) 
         if (ttCapture && !capture)
-            r += 1087 + (depth < 8) * 990;
-
+            r += 1087 + (depth < 8) * 990 + singularExt * 491;
+        
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
             r += 940 + allNode * 887;
