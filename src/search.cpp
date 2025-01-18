@@ -928,6 +928,7 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
+    bool singularSuccess = false;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1080,6 +1081,8 @@ moves_loop:  // When in check, search starts here
                     extension = 1 + (value < singularBeta - doubleMargin)
                               + (value < singularBeta - tripleMargin)
                               + (value < singularBeta - quadMargin);
+                    
+                    singularSuccess = true;
 
                     depth += ((!PvNode) && (depth < 15));
                 }
@@ -1170,6 +1173,9 @@ moves_loop:  // When in check, search starts here
         // For first picked move (ttMove) reduce reduction (~3 Elo)
         else if (move == ttData.move)
             r -= 1960;
+
+        // Increase reduction for quiets if tt move was singular and noisy (we may try to use the singular difference as well to adjust r)
+        if (move != ttData.move && !capture && singularSuccess && ttCapture) r += 1024;
 
         if (capture)
             ss->statScore =
