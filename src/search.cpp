@@ -1175,7 +1175,7 @@ moves_loop:  // When in check, search starts here
             r -= 1960;
 
         // Increase reduction for quiets if tt move was singular and noisy (we may try to use the singular difference as well to adjust r)
-        if (move == ttData.move && !capture && singularSuccess && ttCapture) r += 768;
+        if (move != ttData.move && !capture && singularSuccess && ttCapture) r += 768;
 
         if (capture)
             ss->statScore =
