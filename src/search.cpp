@@ -1228,7 +1228,7 @@ moves_loop:  // When in check, search starts here
                 
                 if (newDepth > d){
 
-                    (ss + 1)->gas = 0; 
+                    (ss + 1)->gas = ss->gas; 
                     
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
                 }
@@ -1246,7 +1246,7 @@ moves_loop:  // When in check, search starts here
             if (!ttData.move)
                 r += 2111;
             
-            (ss + 1)->gas = 0;
+            (ss + 1)->gas = ss->gas; 
 
             // Note that if expected reduction is high, we reduce search depth by 1 here (~9 Elo)
             value =
@@ -1261,7 +1261,7 @@ moves_loop:  // When in check, search starts here
             (ss + 1)->pv[0] = Move::none();
 
             // For now assume gas is 0 on full searches.
-            (ss + 1)->gas   = 0;
+            (ss + 1)->gas = ss->gas; 
 
             // Extend move from transposition table if we are about to dive into qsearch.
             if (move == ttData.move && ss->ply <= thisThread->rootDepth * 2)
