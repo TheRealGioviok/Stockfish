@@ -69,6 +69,7 @@ struct Stack {
     Move                        excludedMove;
     Value                       staticEval;
     int                         statScore;
+    int                         gas;
     int                         moveCount;
     bool                        inCheck;
     bool                        ttPv;
