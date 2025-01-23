@@ -1209,7 +1209,7 @@ moves_loop:  // When in check, search starts here
             (ss + 1)->reduction = newDepth - d;
             
             // Get leftover gas as the "unspent" extension / reduction. 
-            (ss + 1)->gas = (ss + 1)->reduction * 1024 - r;
+            (ss + 1)->gas = r - (ss + 1)->reduction * 1024;
 
             value               = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             (ss + 1)->reduction = 0;
@@ -1228,7 +1228,6 @@ moves_loop:  // When in check, search starts here
                 
                 if (newDepth > d){
 
-                    // For now assume gas is 0 on researches.
                     (ss + 1)->gas = 0; 
                     
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
@@ -1247,7 +1246,6 @@ moves_loop:  // When in check, search starts here
             if (!ttData.move)
                 r += 2111;
             
-            // For now assume gas is 0 on researches.
             (ss + 1)->gas = 0;
 
             // Note that if expected reduction is high, we reduce search depth by 1 here (~9 Elo)
