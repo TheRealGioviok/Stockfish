@@ -791,6 +791,7 @@ Value Search::Worker::search(
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
     const auto correctionValue      = correction_value(*this, pos, ss);
+    bool       evalCorrected        = false;
     if (ss->inCheck)
     {
         // Skip early pruning when in check
@@ -811,8 +812,10 @@ Value Search::Worker::search(
 
         // ttValue can be used as a better position evaluation
         if (is_valid(ttData.value)
-            && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER)))
+            && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER))) {
             eval = ttData.value;
+            evalCorrected = true;
+        }
     }
     else
     {
@@ -847,6 +850,8 @@ Value Search::Worker::search(
     if (priorReduction >= 2 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 173)
         depth--;
 
+    Depth evalDepthLeft = evalCorrected ? std::max(1, depth - ttData.depth) : depth;
+    
     // Step 7. Razoring
     // If eval is really low, skip search entirely and return the qsearch value.
     // For PvNodes, we must have a guard against mates being returned.
