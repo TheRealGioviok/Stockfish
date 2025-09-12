@@ -791,7 +791,7 @@ Value Search::Worker::search(
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
     const auto correctionValue      = correction_value(*this, pos, ss);
-    bool       evalCorrected        = false;
+    Depth      evalDepthLeft        = depth;
     if (ss->inCheck)
     {
         // Skip early pruning when in check
@@ -814,7 +814,7 @@ Value Search::Worker::search(
         if (is_valid(ttData.value)
             && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER))) {
             eval = ttData.value;
-            evalCorrected = true;
+            evalDepthLeft = std::max(1, depth - ttData.depth);
         }
     }
     else
@@ -849,8 +849,6 @@ Value Search::Worker::search(
         depth++;
     if (priorReduction >= 2 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 173)
         depth--;
-
-    Depth evalDepthLeft = evalCorrected ? std::max(1, depth - ttData.depth) : depth;
     
     // Step 7. Razoring
     // If eval is really low, skip search entirely and return the qsearch value.
@@ -871,7 +869,7 @@ Value Search::Worker::search(
                  + std::abs(correctionValue) / 158105;
         };
 
-        if (!ss->ttPv && depth < 14 && eval - futility_margin(depth) >= beta && eval >= beta
+        if (!ss->ttPv && depth < 14 && eval - futility_margin(evalDepthLeft) >= beta && eval >= beta
             && (!ttData.move || ttCapture) && !is_loss(beta) && !is_win(eval))
             return beta + (eval - beta) / 3;
     }
